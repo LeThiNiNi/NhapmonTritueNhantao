@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dự Đoán Cây Trồng</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f4f8f7; /* Màu nền nhạt */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding-top: 30px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 90%; /* Giảm độ rộng của container */
+            max-width: 800px; /* Giới hạn chiều rộng tối đa */
+            margin: 0 auto;
+        }
+        .form-group {
+            margin-bottom: 15px; /* Giảm khoảng cách giữa các trường */
+        }
+        .btn-custom {
+            background-color: #28a745; /* Màu xanh lá cây */
+            color: white;
+            font-weight: bold;
+            border-radius: 50px;
+            padding: 12px;
+            transition: background-color 0.3s ease;
+            width: 100%;
+            margin-top: 10px; /* Giảm khoảng cách giữa các nút */
+        }
+        .btn-custom:hover {
+            background-color: #218838; /* Màu xanh lá cây đậm hơn khi hover */
+        }
+        .card-custom {
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .form-control {
+            border-radius: 10px;
+            box-shadow: 0 0 5px rgba(40, 167, 69, 0.3); /* Màu xanh lá cây cho form control */
+        }
+        .h3-custom {
+            font-size: 1.5rem; /* Giảm kích thước chữ tiêu đề */
+            color: #28a745;
+            font-weight: bold;
+        }
+        .alert {
+            margin-top: 10px; /* Giảm khoảng cách trên của alert */
+            border-radius: 10px;
+        }
+        .row {
+            margin-bottom: 20px; /* Giảm khoảng cách giữa các hàng */
+        }
+        .col-md-6 {
+            padding: 5px; /* Giảm padding cho các cột */
+        }
+        .dropdown-toggle {
+            width: 100%;
+        }
+        /* Thêm media query để điều chỉnh giao diện trên màn hình nhỏ */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            .col-md-6 {
+                padding: 5px;
+                width: 100%;
+            }
+            .h3-custom {
+                font-size: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <!-- Card nhập thông tin -->
+        <div class="col-md-12">
+            <div class="card card-custom">
+                <h3 class="text-center h3-custom">Gợi ý cây trồng 🌱</h3>
+                <form method="POST" action="/predict">
+                    <div class="row">
+                        <!-- Cột bên trái -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="N">Đạm (Nitrogen)</label>
+                                <input type="number" name="N" class="form-control" placeholder="Nhập giá trị Đạm" step="any" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="P">Lân (Phosphorus)</label>
+                                <input type="number" name="P" class="form-control" placeholder="Nhập giá trị Lân" step="any" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="temperature">Nhiệt độ (Temperature)</label>
+                                <input type="number" name="temperature" class="form-control" placeholder="Nhập giá trị Nhiệt độ" step="any" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="humidity">Độ ẩm (Humidity)</label>
+                                <input type="number" name="humidity" class="form-control" placeholder="Nhập giá trị Độ ẩm" step="any" required>
+                            </div>
+                        </div>
+
+                        <!-- Cột bên phải -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="K">Kali (Potassium)</label>
+                                <input type="number" name="K" class="form-control" placeholder="Nhập giá trị Kali" step="any" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="ph_value">Độ pH (pH Value)</label>
+                                <input type="number" name="ph_value" class="form-control" placeholder="Nhập giá trị Độ pH" step="any" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="Rainfall">Lượng mưa (Rainfall)</label>
+                                <input type="number" name="Rainfall" class="form-control" placeholder="Nhập giá trị Lượng mưa" step="any" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Nút Dự Đoán -->
+                    <button type="submit" class="btn btn-custom">Dự Đoán</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Card kết quả dự đoán -->
+        <div class="col-md-12">
+            <div class="card card-custom">
+                <h3 class="text-center h3-custom">Kết Quả Dự Đoán 🌾</h3>
+                {% if prediction_text %}
+                <div class="alert alert-success">
+                    {{ prediction_text|safe }}
+                </div>
+                {% elif error_message %}
+                <div class="alert alert-danger">
+                    {{ error_message }}
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    Nhập thông tin bên trái và nhấn "Dự Đoán" để xem kết quả.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
